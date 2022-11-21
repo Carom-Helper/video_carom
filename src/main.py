@@ -218,7 +218,7 @@ def runner(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', default= ROOT+"../../data/videos/")####.mp4
+    parser.add_argument('--src', default= FILE.parent.parent + "test/origin_ts_cudlong.mp4")####.mp4
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--dst', default=ROOT+"/runs")
     parser.add_argument('--name', default="output")
