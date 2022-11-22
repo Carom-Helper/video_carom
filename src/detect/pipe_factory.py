@@ -1,34 +1,30 @@
+import torch
+import numpy as np
 import argparse
+
+# set path
 import os
 from pathlib import Path
 import sys
 
+CAROM_BASE_DIR=Path(__file__).resolve().parent
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0].__str__()
-WEIGHT_DIR = None
+ROOT = FILE.parent
 
-# tmp = ROOT
-# if str(tmp) not in sys.path and os.path.isabs(tmp):
-#     sys.path.append(str(tmp))  # add ROOT to PATH
-tmp = ROOT + '/weights'
+tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
-    WEIGHT_DIR= (str(tmp))  # add Weights ROOT to PATH
+     sys.path.append(str(tmp))  # add ROOT to PATH
 
-temp = ROOT
-ROOT = ROOT + '/yolo_sort'  # yolov5 strongsort root directory
-
-tmp = ROOT + '/yolov5'
+tmp = ROOT / "npu_yolov5"
+# tmp = ROOT / "cpu_yolov5"
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
     
 # ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-ROOT=temp
-
-from utils.dataloaders import VID_FORMATS, LoadImages, LoadStreams
+from pipe_cls import On2onvertToxywhPipe, PipeResource, ResourceBag, SplitCls, SplitIdx
 from DetectObjectPipe import DetectObjectPipe
 from DetectIndexPipe import DetectIndexPipe, ForceSetIdPipe
-from pipe_cls import IObserverPipe, ConvertToxywhPipe, PipeResource, ResourceBag, SplitCls, SplitIdx, FirstCopyPipe, StartNotDetectCutterPipe, xyxy2xywh, test_print
 from CheckDetectPipe import CheckDetectPipe
 from FindEdgePipe import FindEdgePipe
 
