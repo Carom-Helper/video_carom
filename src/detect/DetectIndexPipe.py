@@ -20,6 +20,7 @@ import numpy as np
 from pathlib import Path
 import torch
 import time
+import cv2
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0].__str__()
@@ -35,28 +36,23 @@ tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
     
-tmp = ROOT + '/yolov5'
+# tmp = ROOT + '/yolov5'
+# if str(tmp) not in sys.path and os.path.isabs(tmp):
+#     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
+# tmp = ROOT + '/strong_sort'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-tmp = ROOT + '/strong_sort'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
+    STRONG_SORT = tmp  # add strong_sort ROOT to PATH
 tmp = ROOT + '/strong_sort/deep/reid'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
+    REID = tmp  # add strong_sort ROOT to PATH
     
 # ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 ROOT=temp
 test_print(sys.path)
 
-
-
-from utils.general import  cv2
-from utils.augmentations import letterbox
-from utils.torch_utils import select_device
-from strong_sort.strong_sort import StrongSORT
-from pipe_cls import One2OnePipe, PipeResource, ResourceBag, SplitIdx, xyxy2xywh
+from Detect_utils import select_device, xyxy2xywh, letterbox
+from pipe_cls import One2OnePipe, PipeResource, ResourceBag, SplitIdx
 from Singleton import Singleton
 
 class DetectIndexWeight:
@@ -74,6 +70,10 @@ class DetectIndexWeight:
         NN_BUDGET = 100,         # Maximum size of the appearance descriptors gallery
         MAX_DET = 7
         ) -> None:
+        tmp = STRONG_SORT
+        if str(tmp) not in sys.path and os.path.isabs(tmp):
+            sys.path.append(str(tmp))  # add ROOT to PATH
+        from strong_sort.strong_sort import StrongSORT
         # initialize StrongSORT
         WEIGHTS = WEIGHT_DIR + "/osnet_x0_25_market1501.pt"
         test_print(WEIGHTS)
@@ -129,6 +129,11 @@ class DetectIndexPipe(One2OnePipe):
         
     @torch.no_grad()
     def exe(self, input: PipeResource) -> PipeResource:#output
+        tmp = STRONG_SORT
+        if str(tmp) not in sys.path and os.path.isabs(tmp):
+            sys.path.append(str(tmp))  # add ROOT to PATH
+        from strong_sort.strong_sort import StrongSORT
+
         t1 = time.time()
         i=0 
         

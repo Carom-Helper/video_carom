@@ -1,10 +1,12 @@
 from abc import *
 from pickle import NONE
 from random import random, randrange
+import cv2
 import time
+import sys
 
 def is_test()->bool:
-    return False
+    return True
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
@@ -15,22 +17,22 @@ from pathlib import Path
 import os
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0].__str__()
+ROOT = FILE.parent
 
 temp = ROOT
 
-ROOT = ROOT + '/yolo_sort'  # yolov5 strongsort root directory
+ROOT = ROOT / 'yolo_sort'  # yolov5 strongsort root directory
 tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
     
-tmp = ROOT + '/yolov5'
+tmp = ROOT / 'yolov5'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-tmp = ROOT + '/strong_sort'
+tmp = ROOT / 'strong_sort'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
-tmp = ROOT + '/strong_sort/deep/reid'
+tmp = ROOT / 'strong_sort/deep/reid'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
     
@@ -41,9 +43,7 @@ test_print(sys.path)
 
 
 ##############################################no test#####################################################
-# from yolo_sort.yolov5.utils.metrics import bbox_iou
-from yolo_sort.yolov5.utils.plots import Annotator, colors, save_one_box
-from yolo_sort.yolov5.utils.general import (xywh2xyxy, cv2)
+from Detect_utils import Annotator, colors,xywh2xyxy
 from DetectError import *
 class PipeResource:
     def __init__(self, vid=-1, f_num=0, path=None, im=None, im0s=None, vid_cap=None, s=None) -> None:

@@ -13,28 +13,28 @@ import sys
 
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0].__str__()
+ROOT = FILE.parent
 
 temp = ROOT
 
 tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
-ROOT = ROOT + '/detect'  # yolov5 strongsort root directory
+ROOT = ROOT / 'detect'  # yolov5 strongsort root directory
 tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
-ROOT = ROOT + '/yolo_sort'  # yolov5 strongsort root directory
+ROOT = ROOT / 'yolo_sort'  # yolov5 strongsort root directory
 tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
-tmp = ROOT + '/yolov5'
+tmp = ROOT / 'yolov5'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-tmp = ROOT + '/strong_sort'
+tmp = ROOT / 'strong_sort'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
-tmp = ROOT + '/strong_sort/deep/reid'
+tmp = ROOT / 'strong_sort/deep/reid'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
 ROOT=temp
@@ -47,11 +47,11 @@ import time
 import threading
 from pickle import NONE
 
-from pipe_factory import *
+from pipe_factory import pipe_factory
+from Detect_utils import LoadImages, PipeResource
 from DetectError import NotEnoughDetectError
 from ballpredictor import ballPredictor
 from main_utils import check_unique_directory, create_directory
-from DetectObjectPipe import runascapp
 
 
 def run(src, dst, device='cpu', vnum="", display=False):
@@ -65,24 +65,15 @@ def run(src, dst, device='cpu', vnum="", display=False):
     pt = True
     stride = 32
     
-    dataset = LoadImages(src, img_size=imgsz, stride=stride, auto=pt)
-    vid_path, vid_writer, txt_path = [
-        None] * nr_sources, [None] * nr_sources, [None] * nr_sources
-    img_list = []
-    
-    
+    dataset = LoadImages(src)
     # set pipe
     pipe, ball_bags, edge_bag = pipe_factory(device=device, display = display)
     notdetect_error = False
     # run detect
-    for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
-        if frame_idx == 0:
-            test_print(im0s.shape, im0s.shape[1])
-            video_shape = im0s.shape
-        
-        input = PipeResource(f_num=frame_idx, path=path,
-                             im=im, im0s=im0s, vid_cap=vid_cap, s=s)
-        img_list.append(im0s)
+    for frame_idx, (im0, path, s) in enumerate(dataset):
+        metadata = {"f_num": frame_idx, "path":path}
+        images = {"origin":im0}
+        input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         if display:
             print(f"{vnum}| Detect [{frame_idx}] frame:",end=" ")
         try:
@@ -203,27 +194,18 @@ def runner(args):
                     filelist.append(os.path.abspath(file_path))
     # print(filelist)
 
-    if args.runascapp:
-        print(f'run as capp start')
-        runascapp(args.src, args.device)
-        print(f'run as capp end')
-        return
-
     for i, file in enumerate(filelist):
-        predictor_thread = threading.Thread(target=run, args=(file, dst, args.device, f"({i+1}/{len(filelist)})", args.display))
-        predictor_thread.start()
-        predictor_thread.join()
+        run(file, dst, args.device, f"({i+1}/{len(filelist)})", args.display)
     #run(src=args.src, device=args.device)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', default= FILE.parent.parent + "test/origin_ts_cudlong.mp4")####.mp4
-    parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--dst', default=ROOT+"/runs")
+    parser.add_argument('--src', default= FILE.parent.parent / "test"/"origin_ts_cudlong.mp4")####.mp4
+    parser.add_argument('--device', default='furiosa', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--dst', default=ROOT / "runs")
     parser.add_argument('--name', default="output")
     parser.add_argument('--display', action="store_true")
-    parser.add_argument('--runascapp', action="store_true")
 
     args = parser.parse_args()
     print(args)
