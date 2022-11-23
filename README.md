@@ -15,3 +15,11 @@ REPOSITORY                                                                      
 caromvideo_image                                                                      latest                       3cd559ba4ccf   About a minute ago   4.14GB
 
 ```
+- tar 파일 생성
+```bash
+docker save -o caromvideo.tar caromvideo_image
+```
+- tar 파일 생성 확인
+```
+ls
+```
