@@ -19,6 +19,10 @@ caromvideo_image                                                                
 ```bash
 docker save -o caromvideo.tar caromvideo_image
 ```
+```
+docker save -o 파일_이름.tar 이미지_이름
+```
+
 - tar 파일 생성 확인
 ```
 ls
