@@ -7,9 +7,9 @@ docker container commit caromvideo_sz caromvideo_image
 ```bash
 docker cinatainer commit [옵션] <컨테이너 식별자> [새로 만들 이미지명 :태그명]
 ```
-- 지정할 수 있는 옵셥
+
 |옵션|설명|
-|------|---|---|
+|------|---|
 |--author, -a| 작성자 지정(ex: sz(sz@gmail.com))|
 |--message, -m| 메시지 지정|
 |--change, -c| commit 시, Dockerfile 명령 지정|
