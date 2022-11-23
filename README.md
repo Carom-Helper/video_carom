@@ -13,5 +13,5 @@ docker image ls
 
 REPOSITORY                                                                            TAG                          IMAGE ID       CREATED              SIZE
 caromvideo_image                                                                      latest                       3cd559ba4ccf   About a minute ago   4.14GB
-caro
+
 ```
