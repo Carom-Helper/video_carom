@@ -35,3 +35,15 @@ docker load -i caromvideo.tar
 ```
 docker image ls
 ```
+
+- 도커 컨테이너 생성
+```
+docker run caromvideo
+```
+
+- 도커 로드
+```
+# 이미지 로드
+docker load [옵션] [파일명]
+docker load -i baseimage.tar
+```
