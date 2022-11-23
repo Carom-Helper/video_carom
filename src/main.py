@@ -28,13 +28,13 @@ ROOT = ROOT / 'yolo_sort'  # yolov5 strongsort root directory
 tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
-tmp = ROOT / 'yolov5'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-tmp = ROOT / 'strong_sort'
+# tmp = ROOT / 'yolov5'
+# if str(tmp) not in sys.path and os.path.isabs(tmp):
+#     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
+tmp = ROOT / 'trackers' / 'strong_sort'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
-tmp = ROOT / 'strong_sort/deep/reid'
+tmp = ROOT / 'trackers' / 'strong_sort' / 'deep' / 'reid'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
 ROOT=temp
@@ -64,16 +64,20 @@ def run(src, dst, device='cpu', vnum="", display=False):
     imgsz = (640, 640)
     pt = True
     stride = 32
-    
+    img_list = list()
     dataset = LoadImages(src)
     # set pipe
     pipe, ball_bags, edge_bag = pipe_factory(device=device, display = display)
     notdetect_error = False
     # run detect
     for frame_idx, (im0, path, s) in enumerate(dataset):
+        if frame_idx == 0:
+            video_shape = im0.shape
+
         metadata = {"f_num": frame_idx, "path":path}
         images = {"origin":im0}
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
+        img_list.append(im0)
         if display:
             print(f"{vnum}| Detect [{frame_idx}] frame:",end=" ")
         try:

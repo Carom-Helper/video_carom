@@ -24,15 +24,15 @@ class FindEdgePipe(IPipeObserver):
 
         # 초기화
         for i, src in enumerate(self.src_list):
-            threshold_x = int(src.im0s.shape[1]/2)
-            threshold_y = int(src.im0s.shape[0]/2)
+            threshold_x = int(src.images["origin"].shape[1]/2)
+            threshold_y = int(src.images["origin"].shape[0]/2)
 
             for i in range(len(src.dets)):
-                if src.dets[i]['x'] > threshold_x and src.dets[i]['y'] > threshold_y:
+                if src.dets[i]['xmin'] > threshold_x and src.dets[i]['ymin'] > threshold_y:
                     bottom_right.append(src.dets[i])
-                elif src.dets[i]['x'] <= threshold_x and src.dets[i]['y'] > threshold_y:
+                elif src.dets[i]['xmin'] <= threshold_x and src.dets[i]['ymin'] > threshold_y:
                     bottom_left.append(src.dets[i])
-                elif src.dets[i]['x'] > threshold_x and src.dets[i]['y'] <= threshold_y:
+                elif src.dets[i]['xmin'] > threshold_x and src.dets[i]['ymin'] <= threshold_y:
                     top_right.append(src.dets[i])
                 else:
                     top_left.append(src.dets[i])
@@ -114,14 +114,14 @@ def return_max(coord):
     if len(coord) == 0:
         return -1
     else:
-        x1 = max(list(map(lambda x: x['x'], coord)), key=list(
-            map(lambda x: x['x'], coord)).count)
-        y1 = max(list(map(lambda x: x['y'], coord)), key=list(
-            map(lambda x: x['y'], coord)).count)
-        x2 = max(list(map(lambda x: x['w'], coord)), key=list(
-            map(lambda x: x['w'], coord)).count)
-        y2 = max(list(map(lambda x: x['h'], coord)), key=list(
-            map(lambda x: x['h'], coord)).count)
+        x1 = max(list(map(lambda x: x['xmin'], coord)), key=list(
+            map(lambda x: x['xmin'], coord)).count)
+        y1 = max(list(map(lambda x: x['ymin'], coord)), key=list(
+            map(lambda x: x['ymin'], coord)).count)
+        x2 = max(list(map(lambda x: x['xmax'], coord)), key=list(
+            map(lambda x: x['xmax'], coord)).count)
+        y2 = max(list(map(lambda x: x['ymax'], coord)), key=list(
+            map(lambda x: x['ymax'], coord)).count)
 
     return [x1, y1, x2, y2]
 

@@ -19,7 +19,7 @@ ROOT = FILE.parent
 #     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
 # # ADD gpu_yolov5 to env list
-# tmp = ROOT / 'gpu_yolov5'
+# tmp = ROOT / 'yolo_sort' / 'yolov5'
 # if str(tmp) not in sys.path and os.path.isabs(tmp):
 #     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 

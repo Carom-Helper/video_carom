@@ -13,13 +13,17 @@ FILE = Path(__file__).resolve()
 ROOT = FILE.parent
 
 
-tmp = ROOT / 'npu_yolov5'
+tmp = ROOT / 'npu_yolo'
 if os.path.isabs(tmp):
     NPU_YOLO_DIR = tmp  # add yolov5 ROOT to PATH
 
-tmp = ROOT / 'gpu_yolov5'
+tmp = ROOT / 'yolo_sort' / 'yolov5'
 if os.path.isabs(tmp):
     GPU_YOLO_DIR = tmp  # add yolov5 ROOT to PATH
+
+tmp = ROOT / 'yolo_sort' / 'trackers' / "strong_sort"
+if os.path.isabs(tmp):
+    STRONG_SORT_DIR = tmp  # add yolov5 ROOT to PATH
 
 # Set weight directory
 WEIGHT_DIR = None
@@ -48,9 +52,15 @@ class NPUDetectObjectWeight(IWeight):
         # ADD gpu_yolov5 to env list
         if str(GPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(GPU_YOLO_DIR))
+        if str(STRONG_SORT_DIR) in sys.path:
+            sys.path.remove(str(STRONG_SORT_DIR))
+            
         if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(NPU_YOLO_DIR))  # add yolov5 ROOT to PATH
-        from npu_yolov5.models.yolov5 import Yolov5Detector
+        
+        print(sys.path)
+
+        from npu_yolo.models.yolov5 import Yolov5Detector
         t1 = time.time()
         # 고정값
         WEIGHTS = "npu_yolo_ball"
@@ -86,7 +96,7 @@ class NPUDetectObjectWeight(IWeight):
     def inference(self, im, origin_size=(640,640)):
         if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(NPU_YOLO_DIR))  # add yolov5 ROOT to PATH
-        from npu_yolov5.models.yolov5 import Yolov5Detector
+        from npu_yolo.models.yolov5 import Yolov5Detector
         result = [self.model(im)]
         if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.remove(str(NPU_YOLO_DIR))

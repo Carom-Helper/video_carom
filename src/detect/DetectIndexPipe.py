@@ -23,15 +23,22 @@ import time
 import cv2
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0].__str__()
+ROOT = FILE.parent
+BASE_DIR = ROOT.parent.parent
 WEIGHT_DIR = None
 
+
+
+tmp = ROOT / 'npu_yolo'
+if os.path.isabs(tmp):
+    NPU_YOLO_DIR = tmp  # add yolov5 ROOT to PATH
+
 temp = ROOT
-tmp = ROOT + '/weights'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
+tmp = ROOT / 'weights'
+if os.path.isabs(tmp):
     WEIGHT_DIR= tmp  # add Weights ROOT to PATH
 
-ROOT = ROOT + '/yolo_sort'  # yolov5 strongsort root directory
+ROOT = ROOT / 'yolo_sort'  # yolov5 strongsort root directory
 tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
@@ -39,13 +46,17 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 # tmp = ROOT + '/yolov5'
 # if str(tmp) not in sys.path and os.path.isabs(tmp):
 #     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-# tmp = ROOT + '/strong_sort'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
+tmp = ROOT / 'trackers' / 'strong_sort'
+if os.path.isabs(tmp):
     STRONG_SORT = tmp  # add strong_sort ROOT to PATH
-tmp = ROOT + '/strong_sort/deep/reid'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
+
+tmp = ROOT / 'yolov5'
+if os.path.isabs(tmp):
+    GPU_YOLO_DIR = tmp  # add strong_sort ROOT to PATH
+
+tmp = ROOT / 'strong_sort/deep/reid'
+if os.path.isabs(tmp):
     REID = tmp  # add strong_sort ROOT to PATH
-    
 # ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 ROOT=temp
@@ -70,12 +81,21 @@ class DetectIndexWeight:
         NN_BUDGET = 100,         # Maximum size of the appearance descriptors gallery
         MAX_DET = 7
         ) -> None:
+        if str(NPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(NPU_YOLO_DIR))
+        if str(GPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(GPU_YOLO_DIR))
+
         tmp = STRONG_SORT
         if str(tmp) not in sys.path and os.path.isabs(tmp):
             sys.path.append(str(tmp))  # add ROOT to PATH
-        from strong_sort.strong_sort import StrongSORT
+        # tmp = GPU_YOLO_DIR
+        # if str(tmp) not in sys.path and os.path.isabs(tmp):
+        #     sys.path.append(str(tmp))  # add ROOT to PATH
+        test_print(sys.path)
+        from strong_sort import StrongSORT
         # initialize StrongSORT
-        WEIGHTS = WEIGHT_DIR + "/osnet_x0_25_market1501.pt"
+        WEIGHTS = WEIGHT_DIR / "osnet_x0_25_market1501.pt"
         test_print(WEIGHTS)
         
         self.ECC = ECC
@@ -129,17 +149,26 @@ class DetectIndexPipe(One2OnePipe):
         
     @torch.no_grad()
     def exe(self, input: PipeResource) -> PipeResource:#output
+        if str(NPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(NPU_YOLO_DIR))
+        if str(GPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(GPU_YOLO_DIR))
+
         tmp = STRONG_SORT
         if str(tmp) not in sys.path and os.path.isabs(tmp):
             sys.path.append(str(tmp))  # add ROOT to PATH
-        from strong_sort.strong_sort import StrongSORT
+        # tmp = GPU_YOLO_DIR
+        # if str(tmp) not in sys.path and os.path.isabs(tmp):
+        #     sys.path.append(str(tmp))  # add ROOT to PATH
+        test_print(sys.path)
+        from strong_sort import StrongSORT
 
         t1 = time.time()
         i=0 
         
-        im0 = input.im0s
+        im0 = input.images["origin"]
         self.curr_frames[i] = im0
-        frame_idx = input.f_num
+        frame_idx = input.metadata["f_num"]
         dets = input.dets
         xywhs = []
         confs = []
@@ -455,7 +484,7 @@ def runner(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', default=ROOT+"/../../data/videos/q_shot3")
+    parser.add_argument('--src', default=BASE_DIR / 'test' / "origin_ts_cudlong.mp4")
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     args = parser.parse_args()
     print(args.src)
