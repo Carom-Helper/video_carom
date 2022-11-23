@@ -27,3 +27,11 @@ docker save -o 파일_이름.tar 이미지_이름
 ```
 ls
 ```
+
+- 도커 이미지 파일 로드
+```bash
+docker load -i caromvideo.tar
+```
+```
+docker image ls
+```
