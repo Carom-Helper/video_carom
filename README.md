@@ -10,6 +10,19 @@ python setup.py build_ext --inplace
 cd ../../../../../../
 ```
 
+# How to initialize ENV with pip
+```
+pip install -r requirements.txt
+```
+
+# How to Set Development with docker 
+```
+make build
+```
+```
+make run
+```
+
 # 도커 컨테이너로부터 이미지 작성 (docker container commit)
 ```bash
 docker container commit caromvideo_sz caromvideo_image
