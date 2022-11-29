@@ -1,5 +1,15 @@
 # video_carom
 
+# How to install
+```
+git clone 
+cd Carom-API-Server
+git submodule update --init --recursive
+cd src/detect/npu_yolo/utils/box_decode/cbox_decode
+python setup.py build_ext --inplace
+cd ../../../../../../
+```
+
 # 도커 컨테이너로부터 이미지 작성 (docker container commit)
 ```bash
 docker container commit caromvideo_sz caromvideo_image
