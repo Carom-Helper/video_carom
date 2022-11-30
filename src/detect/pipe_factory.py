@@ -59,9 +59,7 @@ def pipe_factory(start_pipe=None, device='cpu', display = True):
 
     #detect index and split index
     detect_idx_pipe = DetectIndexPipe(device=device, display=display)
-    xywh_pipe = ConvertToxywhPipe()
     repeat_pipe = FirstCopyPipe(N_INIT=detect_idx_pipe.N_INIT, display=display)
-    force_setid_pipe = ForceSetIdPipe(display=display)
     check_detect_pipe = CheckDetectPipe()
     start_cutter_pipe = StartNotDetectCutterPipe()
 
@@ -70,10 +68,8 @@ def pipe_factory(start_pipe=None, device='cpu', display = True):
     _ = split_cls_pipe.connect_pipe(start_cutter_pipe)      # split cls - ball - start cut
     test_print("connect sort pipe : ", _)
     start_cutter_pipe.connect_pipe(check_detect_pipe)       # start cut - check -detect
-    check_detect_pipe.connect_pipe(xywh_pipe)               # check detect - xyxy
-    xywh_pipe.connect_pipe(repeat_pipe)                     # check detect - repeat
+    check_detect_pipe.connect_pipe(repeat_pipe)               # check detect - xyxy
     repeat_pipe.connect_pipe(detect_idx_pipe)               # repeat - detect idx
-    detect_idx_pipe.connect_pipe(force_setid_pipe)          # detect idx - force set id
 
     split_idx_pipe = SplitIdx()
     ball_list = []
@@ -82,7 +78,7 @@ def pipe_factory(start_pipe=None, device='cpu', display = True):
         bag = ResourceBag()
         split_idx_pipe.connect_pipe(bag)            # split idx - ball bag (iterate)
         ball_list.append(bag)
-    force_setid_pipe.connect_pipe(split_idx_pipe)    # force set id - split idx
+    detect_idx_pipe.connect_pipe(split_idx_pipe)    # force set id - split idx
 
     #set start_pipe end_pipe
     if start_pipe is None:
@@ -94,7 +90,7 @@ def pipe_factory(start_pipe=None, device='cpu', display = True):
     return (start_pipe, ball_list,  find_edge_pipe)
 
 
-def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
+def detect(src, device='furiosa', MIN_DETS= 10, display=False, inDB=False):
     # # set pipe
     pipe, ball_bag = pipe_factory(device=device, display=display, inDB=inDB)
     

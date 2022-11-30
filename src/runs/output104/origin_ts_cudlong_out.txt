@@ -1,0 +1,6 @@
+0, InitialState, (170,89), (685,39), (156,122)
+199, ObjectBall1, ObjectBall2, (164,107), (156,122)
+226, CueBall, Table, (164,10)
+228.5, ObjectBall1, Table, (7,23)
+233, ObjectBall1, Table, (23,10)
+269, EndState, (155,66), (117,68), (118,200)

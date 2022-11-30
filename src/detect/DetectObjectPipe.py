@@ -40,7 +40,7 @@ from Detect_utils import (PipeResource, LoadImages, copy_piperesource,
                            is_test, cv2, print_args)
 
 def is_test_detect_object()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_detect_object():
@@ -76,6 +76,7 @@ class DetectObjectPipe(One2OnePipe):
         classes = None
         ) -> PipeResource:
         t1 = time.time()
+        frame = input.metadata["f_num"]
         output = PipeResource()
 
         # 고정 값
@@ -99,6 +100,7 @@ class DetectObjectPipe(One2OnePipe):
             test_print(det)
             for xmin, ymin, xmax, ymax, conf, cls in det: # detect datas
                 output_det = {
+                    "frame": int(frame),
                     "xmin": int(xmin),
                     "ymin": int(ymin),
                     "xmax": int(xmax),

@@ -54,7 +54,7 @@ from ballpredictor import ballPredictor
 from main_utils import check_unique_directory, create_directory
 
 
-def run(src, dst, device='cpu', vnum="", display=False):
+def run(src, dst, device='furiosa', vnum="", display=False):
     print(f'======== [ {src} ] ========' )
     print("main start ... ")
     t1 = time.time()

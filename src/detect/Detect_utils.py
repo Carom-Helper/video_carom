@@ -1,5 +1,5 @@
 def is_test()->bool:
-    return False
+    return True
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
@@ -424,11 +424,22 @@ class PipeResource:
     def update_id(self, key, value, xywh, conf, cls=1):
         for det in self.dets:
             if float(det["conf"]) == float(conf) and int(det["cls"]) == int(cls):
-                if same_box([],[]):
+                det_box = [det["xmin"],det["ymin"],det["xmax"],det["ymax"]]
+                det_box = xyxy2xywh(det_box)
+                if same_box(xywh,det_box):
                     det[key] = value
+                    det['x'] = det_box[0]
+                    det['y'] = det_box[1]
+                    det['w'] = det_box[2]
+                    det['h'] = det_box[3]
                         
 def same_box(box1, box2, iou_th=0.9) -> bool:
-    return True
+    sum =0
+    delta = 10.0
+    for b1, b2 in zip(box1, box2):
+        sum += abs(b1 -b2)
+    result = False if sum > delta else True
+    return result
 
 def xywh2xyxy(x):
     y=list(x)

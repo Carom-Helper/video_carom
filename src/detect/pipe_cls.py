@@ -6,7 +6,7 @@ import sys
 
 from Detect_utils import PipeResource, xyxy2xywh, copy_piperesource, is_test
 def is_test_pipe_cls()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_pipe_cls():
@@ -127,14 +127,14 @@ class IOne2OnePipe(IObserverPipe, metaclass=ABCMeta):
         return False
     
     def call_next_pipe(self, output : PipeResource, observer_idx=0) -> None:
-        try:
-            if isinstance(output, PipeResource):                                #check input valid
-                if isinstance(self.next_pipe, IPipeObserver):                   #check next pipe valid
-                    test_print(self.__str__() + f" call_next_pipe({self.next_pipe.__str__()})")
-                    self.next_pipe.push_src(output)
-        except KeyboardInterrupt:sys.exit()
-        except Exception as ex:
-            print(f'{str(self)} One2OnePipe call_next_pipe : {str(ex)}')
+        # try:
+        if isinstance(output, PipeResource):                                #check input valid
+            if isinstance(self.next_pipe, IPipeObserver):                   #check next pipe valid
+                test_print(self.__str__() + f" call_next_pipe({self.next_pipe.__str__()})")
+                self.next_pipe.push_src(output)
+        # except KeyboardInterrupt:sys.exit()
+        # except Exception as ex:
+        #     print(f'{str(self)} One2OnePipe call_next_pipe : {str(ex)}')
     
     
 class One2OnePipe(IOne2OnePipe, metaclass=ABCMeta):
@@ -147,6 +147,8 @@ class One2OnePipe(IOne2OnePipe, metaclass=ABCMeta):
                 # test_print(self.__str__() + " puch_src")
                 t1 = time.time()
                 output = self.handler.exe(input)
+                test_print(f"????{str(self)}????")
+                output.print(on=is_test_pipe_cls())
                 t2 = time.time()
                 test_print(f"[{self.get_regist_type()} exe {t2-t1}s]",end=" ")
                 if output is not None:                                          #no action condition
@@ -189,16 +191,16 @@ class One2ManyPipe(IObserverPipe, metaclass=ABCMeta):
     
     def call_next_pipe(self, output : PipeResource, observer_idx=0) -> None:
         if isinstance(output, PipeResource):                                #check input valid
-            try:
-                if isinstance(self.next_pipe[observer_idx], IPipeObserver):     #check next pipe valid
-                    # test_print(self.__str__() + " call_next_pipe")
-                    self.next_pipe[observer_idx].push_src(output)
-            except KeyboardInterrupt:sys.exit()
-            except IndexError as ex:
-                pass
-                #print(self.__str__(), f" call_next_pipe({observer_idx}/{self.next_pipe.__len__()}) : ", ex.__str__())
-            except Exception as ex:
-                print(self.__str__(), " One2ManyPipe call_next_pipe : ", ex.__str__())
+            # try:
+            if isinstance(self.next_pipe[observer_idx], IPipeObserver):     #check next pipe valid
+                # test_print(self.__str__() + " call_next_pipe")
+                self.next_pipe[observer_idx].push_src(output)
+            # except KeyboardInterrupt:sys.exit()
+            # except IndexError as ex:
+            #     pass
+            #     #print(self.__str__(), f" call_next_pipe({observer_idx}/{self.next_pipe.__len__()}) : ", ex.__str__())
+            # except Exception as ex:
+            #     print(self.__str__(), " One2ManyPipe call_next_pipe : ", ex.__str__())
            
     @abstractclassmethod
     def push_src(self, input: PipeResource) -> None:

@@ -3,7 +3,7 @@ def is_test()->bool:
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
-        print("detect object pipe test : ", s, s1, s2, s3, s4, s5, end=end)
+        print("detect index pipe test : ", s, s1, s2, s3, s4, s5, end=end)
 
 import argparse
 import os
@@ -93,7 +93,7 @@ class DetectIndexWeight:
         # if str(tmp) not in sys.path and os.path.isabs(tmp):
         #     sys.path.append(str(tmp))  # add ROOT to PATH
         test_print(sys.path)
-        from strong_sort import StrongSORT
+        from yolo_sort.trackers.strong_sort.strong_sort import StrongSORT
         # initialize StrongSORT
         WEIGHTS = WEIGHT_DIR / "osnet_x0_25_market1501.pt"
         test_print(WEIGHTS)
@@ -111,9 +111,9 @@ class DetectIndexWeight:
         for i in range(nr_sources):
             self.strongsort_list.append(
                 StrongSORT(
-                    strong_sort_weights,
-                    device,
-                    half,
+                    model_weights=strong_sort_weights,
+                    device=device,
+                    fp16=half,
                     max_dist=MAX_DIST,
                     max_iou_distance=MAX_IOU_DISTANCE,
                     max_age=MAX_AGE,
@@ -149,68 +149,61 @@ class DetectIndexPipe(One2OnePipe):
         
     @torch.no_grad()
     def exe(self, input: PipeResource) -> PipeResource:#output
-        if str(NPU_YOLO_DIR) in sys.path:
-            sys.path.remove(str(NPU_YOLO_DIR))
-        if str(GPU_YOLO_DIR) in sys.path:
-            sys.path.remove(str(GPU_YOLO_DIR))
+        # if str(NPU_YOLO_DIR) in sys.path:
+        #     sys.path.remove(str(NPU_YOLO_DIR))
+        # if str(GPU_YOLO_DIR) in sys.path:
+        #     sys.path.remove(str(GPU_YOLO_DIR))
 
-        tmp = STRONG_SORT
-        if str(tmp) not in sys.path and os.path.isabs(tmp):
-            sys.path.append(str(tmp))  # add ROOT to PATH
-        # tmp = GPU_YOLO_DIR
+        # tmp = STRONG_SORT
         # if str(tmp) not in sys.path and os.path.isabs(tmp):
         #     sys.path.append(str(tmp))  # add ROOT to PATH
-        test_print(sys.path)
-        from strong_sort import StrongSORT
-
+        # # tmp = GPU_YOLO_DIR
+        # # if str(tmp) not in sys.path and os.path.isabs(tmp):
+        # #     sys.path.append(str(tmp))  # add ROOT to PATH
+        # test_print(sys.path)
+        # from strong_sort import StrongSORT
         t1 = time.time()
         i=0 
+        
+        test_print("==========input========")
+        input.print(on=is_test())
         
         im0 = input.images["origin"]
         self.curr_frames[i] = im0
         frame_idx = input.metadata["f_num"]
-        dets = input.dets
-        xywhs = []
-        confs = []
-        cls = []
-        for det in dets:
-            xywhs.append([det["x"], det["y"], det["w"], det["h"]])
+        dets = list()
+        confs = list()
+        for det in input.dets:
+            dets.append([det["xmin"], det["ymin"], det["xmax"], det["ymax"], det["conf"], det["cls"]])
             confs.append(det["conf"])
-            cls.append(det["cls"])
-        
-            
+        dets = np.array(dets)
         line_thickness = 2
         names=frame_idx.__str__()
-        #annotator = Annotator(im0, line_width=line_thickness, example=str(names))    
-        #annotator.box_label(xyxy, label, color=colors(c, True))
+
+
+        # xywhs = np.array(xywhs)
+        # confs = np.array(confs)#.reshape(shape=[1,-1])
+        # cls = np.array(cls)
         
-        xywhs = np.array(xywhs)
-        confs = np.array(confs)#.reshape(shape=[1,-1])
-        cls = np.array(cls)
         
-        # xywhs[xywhs ==''] = 0.0
-        # confs[confs ==''] = 0.0
-        # cls[cls ==''] = 0.0
+        # xywhs = xywhs.astype(np.float64)
+        # confs = confs.astype(np.float64)
+        # cls = cls.astype(np.int64)
         
-        xywhs = xywhs.astype(np.float64)
-        confs = confs.astype(np.float64)
-        cls = cls.astype(np.int64)
+        # xywhs = torch.Tensor(xywhs)
+        # confs = torch.Tensor(confs)
+        # cls = torch.Tensor(cls)
         
-        xywhs = torch.Tensor(xywhs)
-        confs = torch.Tensor(confs)
-        cls = torch.Tensor(cls)
-        
-        if self.ECC:  # camera motion compensation
-            self.strongsort_list[i].tracker.camera_update(self.prev_frames[i], self.curr_frames[i])
+        # if self.ECC:  # camera motion compensation
+        #     self.strongsort_list[i].tracker.camera_update(self.prev_frames[i], self.curr_frames[i])
             
-        if det is not None and len(det):
+        if dets is not None and len(dets):
             # pass detections to strongsort
-            self.outputs[i] = self.strongsort_list[i].update(xywhs, confs, cls, im0)
-            #test_print(self.outputs[i], "outputs", type(self.outputs[i]))
+            self.outputs[i] = self.strongsort_list[i].update(dets, im0)
             # draw boxes for visualization
             if len(self.outputs[i]) > 0:
+                test_print("============================================")
                 for j, (output, conf) in enumerate(zip(self.outputs[i], confs)):
-                    test_print(output)
                     try:
                         bboxes = output[0:4]
                         id = int((output[4] if output[4] >= 1 or output[4] <= 5 else 6)) - 1
@@ -218,15 +211,16 @@ class DetectIndexPipe(One2OnePipe):
                         conf = output[6]
                         
                         xywhs = xyxy2xywh(bboxes)
+                        test_print(f"({j})update_id 210 : ", int(id),xywhs,cls, conf)
                         input.update_id(key="id", value=int(id),xywh=xywhs,cls=cls, conf=conf)
                     except KeyboardInterrupt:sys.exit()
                     except:
                         input.update_id(key="id", value=int(id),xywh=xywhs,cls=cls, conf=conf)
-                    test_print("output", id, end=" ")
         else:
             self.strongsort_list[i].increment_ages()
         self.prev_frames[i] = self.curr_frames[i]
         
+        test_print("==========output========")
         input.print(on=is_test())
         
         t2 = time.time()
@@ -475,9 +469,9 @@ def test_singleton():
     print(cpu.strongsort_list)
 
 def runner(args):
-    #test_yolofile_reader(args.src)
-    #test_track(args.src)
-    #test_push_src(args.src, args.device)
+    test_yolofile_reader(args.src)
+    test_track(args.src)
+    test_push_src(args.src, args.device)
     test_singleton()
 
     
