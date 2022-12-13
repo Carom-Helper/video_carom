@@ -4,7 +4,7 @@
 ```
 git clone 
 cd Carom-API-Server
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 cd src/detect/npu_yolo/utils/box_decode/cbox_decode
 python setup.py build_ext --inplace
 cd ../../../../../../
